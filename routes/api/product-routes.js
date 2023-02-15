@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
       },
       {
         model: Tag,
-        through: ProductTag 
+        through: ProductTag,
       }
     ]
   }).then(productData => res.json(productData)).catch(err =>{
@@ -37,14 +37,15 @@ router.get('/:id', (req, res) => {
       },
       {
         model: Tag,
-        through: ProductTag
+        through: ProductTag,
+      
       }
     ]
   }).then(productData => {
     if(!productData){
       res.status(404).json({message: "No product found"})
       return 
-    } res.json(productData);
+    } else res.json(productData);
   }).catch(err => {
     console.log(err);
     res.status(500).json(err);
@@ -61,7 +62,11 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
-  Product.create(req.body)
+  Product.create({
+    product_name: req.body.product_name,
+    price: req.body.price,
+    stock: req.body.stock
+  })
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
       if (req.body.tagIds.length) {
@@ -100,13 +105,14 @@ router.put('/:id', (req, res) => {
       const productTagIds = productTags.map(({ tag_id }) => tag_id);
       // create filtered list of new tag_ids
       const newProductTags = req.body.tagIds
-        .filter((tag_id) => !productTagIds.includes(tag_id))
+      .filter((tag_id) => !productTagIds.includes(tag_id))
         .map((tag_id) => {
           return {
             product_id: req.params.id,
-            tag_id,
+            tag_id
           };
         });
+
       // figure out which ones to remove
       const productTagsToRemove = productTags
         .filter(({ tag_id }) => !req.body.tagIds.includes(tag_id))
@@ -135,7 +141,7 @@ router.delete('/:id', (req, res) => {
     if(!productData){
       res.status(404).json({message: 'No product found'})
       return
-    }; res.json(productData)
+    } res.json(productData)
   }).catch(err => {
     console.log(err);
     res.status(500).json(err)
